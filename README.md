@@ -1,48 +1,48 @@
-\# Distributed REST System – Products \& Stock Services
+# Distributed REST System — Products & Stock Services
 
 
 
-\## Opis projektu
-
-
-
-Projekt przedstawia prosty system rozproszony składający się z dwóch niezależnych mikroserwisów komunikujących się poprzez REST API.
-
-
-
-System składa się z:
-
-
+Projekt przedstawia prosty system rozproszony składający się z dwóch mikroserwisów komunikujących się poprzez REST API
+System demonstruje komunikację między dwoma niezależnymi usługami REST.
 
 ---
 
+## Struktura repozytorium
+
+distributed-rest-system/
+│
+├── products_service/
+│   └── main.py
+│
+├── stock_service/
+│   └── main.py
+│
+└── README.md
+
+---
+
+## Jak uruchomić serwisy
+
+###  1. Products Service (port 8001)
+
+cd products_service
+python -m venv venv
+venv\Scripts\activate
+pip install fastapi uvicorn
+uvicorn main:app --host 127.0.0.1 --port 8001 --reload
+
+### ▶️ 2. Stock Service (port 8002)
+
+cd stock_service
+python -m venv venv
+venv\Scripts\activate
+pip install fastapi uvicorn httpx
+uvicorn main:app --host 127.0.0.1 --port 8002 --reload
 
 
-\## 🟦 1. Products Service (Serwis Produktów)
-
-\- Port: \*\*8001\*\*
-
-\- Endpoint: `GET /products/{id}`
-
-\- Serwis przechowuje dane produktów w pamięci i zwraca je w formacie JSON.
-
-\- W przypadku nieistniejącego produktu zwraca \*\*HTTP 404\*\*.
 
 
 
-Przykładowa odpowiedź:
-
-```json
-
-{
-
-&nbsp; "id": 1,
-
-&nbsp; "name": "Laptop",
-
-&nbsp; "price": 4500.0
-
-}
 
 
 
