@@ -1,29 +1,41 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+import httpx
 
-app = FastAPI(title="Products Service")
+PRODUCTS_SERVICE_URL = "http://127.0.0.1:8001"
 
-
-class Product(BaseModel):
-    id: int
-    name: str
-    price: float
+app = FastAPI(title="Stock Service")
 
 
-# "Na sztywno" – база продуктов в памяти
-PRODUCTS_DB = {
-    1: Product(id=1, name="Laptop", price=4500.00),
-    2: Product(id=2, name="Smartphone", price=2500.00),
-    3: Product(id=3, name="Headphones", price=350.00),
+class Stock(BaseModel):
+    productId: int
+    quantity: int
+
+
+# Hardcoded stock data
+STOCK_DB = {
+    1: 15,
+    2: 0,
+    3: 42,
 }
 
 
-@app.get("/products/{id}", response_model=Product)
-async def get_product(id: int):
-    print(f"[Products Service] GET /products/{id} received")
-    product = PRODUCTS_DB.get(id)
-    if not product:
-        print(f"[Products Service] Product {id} NOT FOUND")
-        raise HTTPException(status_code=404, detail="Product not found")
-    print(f"[Products Service] Product {id} FOUND: {product}")
-    return product
+@app.get("/stock/{product_id}", response_model=Stock)
+async def get_stock(product_id: int):
+    print(f"[Stock Service] GET /stock/{product_id} received")
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{PRODUCTS_SERVICE_URL}/products/{product_id}")
+
+    if response.status_code == 404:
+        print(f"[Stock Service] Product {product_id} does NOT exist")
+        raise HTTPException(status_code=404, detail="Product does not exist")
+
+    if response.status_code != 200:
+        print(f"[Stock Service] Unexpected status from Products Service: {response.status_code}")
+        raise HTTPException(status_code=502, detail="Error contacting Products Service")
+
+    quantity = STOCK_DB.get(product_id, 0)
+    print(f"[Stock Service] Returning stock for product {product_id}: quantity={quantity}")
+
+    return Stock(productId=product_id, quantity=quantity)
